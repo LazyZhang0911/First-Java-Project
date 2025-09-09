@@ -29,8 +29,28 @@ public class PlayerDao {
 
     // 4. 按 ID 查询玩家
     public Player getPlayerById(int id) {
-        return null;// 待写
+        String sql = "SELECT * FROM players WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Player(rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("role"),
+                            rs.getDouble("balance"),
+                            rs.getDouble("rating")); // 找到就返回
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return null; // 没找到就返回 null
     }
+
 
     // 5. 查询所有玩家
     public List<Player> getAllPlayers() {
@@ -42,13 +62,11 @@ public class PlayerDao {
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                Player player = new Player();
-                player.setId(rs.getInt("id"));
-                player.setName(rs.getString("name"));
-                player.setRole(rs.getString("role"));
-                player.setBalance(rs.getDouble("balance"));
-                player.setRating(rs.getDouble("rating"));
-
+                Player player = new Player(rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("role"),
+                        rs.getDouble("balance"),
+                        rs.getDouble("rating"));
                 players.add(player); // 添加到列表
             }
 
